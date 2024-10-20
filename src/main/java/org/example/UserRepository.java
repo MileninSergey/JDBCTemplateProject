@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface UserRepository {
 
-    void create (User user);
+    User create (User user);
 
     void update (User user);
 

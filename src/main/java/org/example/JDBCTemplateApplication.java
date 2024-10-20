@@ -9,5 +9,4 @@ public class JDBCTemplateApplication {
         SpringApplication.run(JDBCTemplateApplication.class,args);
 
     }
-
 }

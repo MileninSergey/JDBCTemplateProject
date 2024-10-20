@@ -3,8 +3,11 @@ package org.example;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
 import java.util.List;
 
 @Repository
@@ -14,15 +17,26 @@ public class UserRepositoryImpl implements UserRepository {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void create(User user) {
+    public User create(User user) {
         String sql = "INSERT INTO users (email,password,userName) VALUES (?,?,?)";
-        jdbcTemplate.update(sql,user.getEMail(),user.getPassword(),user.getUserName());
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+
+        jdbcTemplate.update(connection -> {
+           PreparedStatement preparedStatement =  connection.prepareStatement(sql,new String[]{"id"});
+           preparedStatement.setString(1,user.getEmail());
+           preparedStatement.setString(2,user.getPassword());
+           preparedStatement.setString(3,user.getUserName());
+           return preparedStatement;
+        },keyHolder);
+
+        User user1 = new User(keyHolder.getKey().longValue(), user.getEmail(), user.getPassword(), user.getUserName());
+        return user1;
     }
 
     @Override
     public void update(User user) {
         String sql = "update users set email = ? , username = ? ,password = ? where id = ?";
-        jdbcTemplate.update(sql,user.getEMail(),user.getPassword(),user.getUserName(),user.getId());
+        jdbcTemplate.update(sql,user.getEmail(),user.getPassword(),user.getUserName(),user.getId());
     }
 
     @Override
